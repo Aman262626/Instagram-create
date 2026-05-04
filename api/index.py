@@ -1,15 +1,17 @@
-import json
 import os
 import random
 import string
 import time
-import base64
 
 from flask import Flask, request, jsonify, send_from_directory
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 import requests as http_requests
 import names
 
 app = Flask(__name__, static_folder="../public", static_url_path="")
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", os.urandom(32).hex())
+
+_serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
 
 # ─── Indian name lists for username generation ───
 
@@ -73,11 +75,11 @@ def _get_ig_headers():
 
 
 def _encode_session(data):
-    return base64.b64encode(json.dumps(data).encode()).decode()
+    return _serializer.dumps(data)
 
 
-def _decode_session(token):
-    return json.loads(base64.b64decode(token.encode()).decode())
+def _decode_session(token, max_age=600):
+    return _serializer.loads(token, max_age=max_age)
 
 
 # ─── Serve the frontend ───
@@ -131,8 +133,8 @@ def verify_otp():
 
     try:
         sess = _decode_session(session_token)
-    except Exception:
-        return jsonify({"ok": False, "error": "Invalid session. Please restart."}), 400
+    except (BadSignature, SignatureExpired):
+        return jsonify({"ok": False, "error": "Invalid or expired session. Please restart."}), 400
 
     headers = sess["headers"]
     email = sess["email"]
@@ -169,8 +171,8 @@ def create_account():
 
     try:
         sess = _decode_session(session_token)
-    except Exception:
-        return jsonify({"ok": False, "error": "Invalid session. Please restart."}), 400
+    except (BadSignature, SignatureExpired):
+        return jsonify({"ok": False, "error": "Invalid or expired session. Please restart."}), 400
 
     headers = sess["headers"]
     email = sess["email"]
@@ -207,7 +209,7 @@ def create_account():
         )
 
         if '"account_created":true' in res.text:
-            sid = res.cookies.get("sessionid")
+            sid = res.cookies.get("sessionid", "")
             full_cookies = f"mid={mid}; ig_did={ig_did}; csrftoken={csrftoken}; sessionid={sid}"
             return jsonify({
                 "ok": True,
