@@ -5,10 +5,11 @@ Designed to be deployed on **Vercel** using Python serverless functions.
 
 ## Features
 
-- **Step 1** – Enter your email address  
-- **Step 2** – Verify the 6-digit OTP sent to your inbox  
-- **Step 3** – Account is created automatically with a random Indian-style username  
-- Copy username, password, and session cookies with one click
+- **Temp Email** – Generate a disposable email with one click (via mail.tm, no API key needed)  
+- **Auto OTP** – Inbox is polled automatically to detect and fill the OTP  
+- **Manual Email** – Or enter your own email address  
+- **Account History** – All created accounts stored locally in the browser  
+- Copy username, password, and cookies with one click
 
 ## Tech Stack
 
@@ -23,15 +24,14 @@ Designed to be deployed on **Vercel** using Python serverless functions.
 1. Push this repo to GitHub.
 2. Import the repository in [Vercel](https://vercel.com/new).
 3. Vercel will auto-detect the `vercel.json` configuration.
-4. Add a `SECRET_KEY` environment variable in Vercel → Settings → Environment Variables.  
-   Generate one with: `python -c "import secrets; print(secrets.token_hex(32))"`
-5. Click **Deploy**.
+4. Click **Deploy** – works out of the box, no extra settings needed.
+
+> **Optional:** For extra security, add a `SECRET_KEY` environment variable in Vercel → Settings → Environment Variables.
 
 ## Local Development
 
 ```bash
 pip install -r requirements.txt
-export SECRET_KEY=$(python -c "import secrets; print(secrets.token_hex(32))")
 cd api && flask --app index run --debug
 ```
 
@@ -51,8 +51,10 @@ Then open `http://localhost:5000`.
 
 ## How It Works
 
-1. **Send Code** – Initialises an Instagram web session and sends a verification email.  
-2. **Verify OTP** – Confirms the email code via Instagram's API.  
-3. **Create Account** – Generates a random username/password and registers the account.
+1. **Generate Email** – Creates a temp email via mail.tm, or use your own.  
+2. **Send Code** – Initialises an Instagram web session and sends a verification email.  
+3. **Auto OTP** – Polls the temp inbox for the OTP code (or enter manually).  
+4. **Create Account** – Generates a random username/password and registers the account.  
+5. **History** – Saves all account info (email, username, password) in the browser.
 
-Session state is passed between steps as a signed token (via `itsdangerous`) so the serverless functions remain stateless and tamper-proof.
+Session state is encrypted (Fernet/AES) and signed so the serverless functions remain stateless and tamper-proof.
