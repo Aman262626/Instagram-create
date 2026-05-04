@@ -1,9 +1,14 @@
+import base64
+import hashlib
+import json
 import os
 import random
+import re
 import secrets
 import string
 import time
 
+from cryptography.fernet import Fernet, InvalidToken
 from flask import Flask, request, jsonify, send_from_directory
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 import requests as http_requests
@@ -20,6 +25,8 @@ if not _secret:
 app.config["SECRET_KEY"] = _secret
 
 _serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
+_fernet_key = base64.urlsafe_b64encode(hashlib.sha256(_secret.encode()).digest())
+_fernet = Fernet(_fernet_key)
 
 # ─── Indian name lists for username generation ───
 
@@ -83,11 +90,15 @@ def _get_ig_headers():
 
 
 def _encode_session(data):
-    return _serializer.dumps(data)
+    payload = json.dumps(data).encode()
+    encrypted = _fernet.encrypt(payload)
+    return _serializer.dumps(encrypted.decode())
 
 
 def _decode_session(token, max_age=600):
-    return _serializer.loads(token, max_age=max_age)
+    encrypted_str = _serializer.loads(token, max_age=max_age)
+    decrypted = _fernet.decrypt(encrypted_str.encode())
+    return json.loads(decrypted)
 
 
 # ─── Serve the frontend ───
@@ -141,7 +152,7 @@ def verify_otp():
 
     try:
         sess = _decode_session(session_token)
-    except (BadSignature, SignatureExpired):
+    except (BadSignature, SignatureExpired, InvalidToken):
         return jsonify({"ok": False, "error": "Invalid or expired session. Please restart."}), 400
 
     headers = sess["headers"]
@@ -179,7 +190,7 @@ def create_account():
 
     try:
         sess = _decode_session(session_token)
-    except (BadSignature, SignatureExpired):
+    except (BadSignature, SignatureExpired, InvalidToken):
         return jsonify({"ok": False, "error": "Invalid or expired session. Please restart."}), 400
 
     headers = sess["headers"]
@@ -227,5 +238,90 @@ def create_account():
             })
         else:
             return jsonify({"ok": False, "error": "Account creation failed. Try again."}), 400
+    except Exception as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 500
+
+
+# ─── Temp Mail helpers (mail.tm) ───
+
+def _mail_random_string(length=12):
+    return "".join(random.choices(string.ascii_lowercase + string.digits, k=length))
+
+
+def _mail_get_domain():
+    try:
+        r = http_requests.get("https://api.mail.tm/domains", timeout=10)
+        return r.json()["hydra:member"][0]["domain"]
+    except Exception:
+        return None
+
+
+# ─── API: create temp email ───
+
+@app.route("/api/create-email", methods=["POST"])
+def create_temp_email():
+    domain = _mail_get_domain()
+    if not domain:
+        return jsonify({"ok": False, "error": "Could not fetch mail domain."}), 502
+
+    addr = _mail_random_string() + "@" + domain
+    pwd = _mail_random_string(16)
+
+    try:
+        http_requests.post(
+            "https://api.mail.tm/accounts",
+            json={"address": addr, "password": pwd},
+            timeout=10,
+        )
+        tok_resp = http_requests.post(
+            "https://api.mail.tm/token",
+            json={"address": addr, "password": pwd},
+            timeout=10,
+        )
+        token = tok_resp.json().get("token")
+        if not token:
+            return jsonify({"ok": False, "error": "Failed to authenticate temp email."}), 502
+
+        mail_token = _encode_session({"mail_addr": addr, "mail_token": token})
+        return jsonify({"ok": True, "email": addr, "mail_token": mail_token})
+    except Exception as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 500
+
+
+# ─── API: check inbox for OTP ───
+
+@app.route("/api/check-otp", methods=["POST"])
+def check_otp():
+    body = request.get_json(force=True)
+    mail_token_str = body.get("mail_token", "")
+    if not mail_token_str:
+        return jsonify({"ok": False, "error": "Mail token is required."}), 400
+
+    try:
+        mt = _decode_session(mail_token_str)
+    except (BadSignature, SignatureExpired, InvalidToken):
+        return jsonify({"ok": False, "error": "Mail session expired. Generate a new email."}), 400
+
+    bearer = mt["mail_token"]
+    headers = {"Authorization": f"Bearer {bearer}"}
+
+    try:
+        inbox = http_requests.get(
+            "https://api.mail.tm/messages", headers=headers, timeout=10
+        ).json().get("hydra:member", [])
+
+        codes = []
+        for msg in inbox[:5]:
+            msg_data = http_requests.get(
+                f"https://api.mail.tm/messages/{msg['id']}",
+                headers=headers,
+                timeout=10,
+            ).json()
+            text = (msg_data.get("text", "") + " " + msg_data.get("subject", ""))
+            found = re.findall(r"\b\d{4,8}\b", text)
+            codes.extend(found)
+
+        codes = list(dict.fromkeys(codes))
+        return jsonify({"ok": True, "codes": codes})
     except Exception as exc:
         return jsonify({"ok": False, "error": str(exc)}), 500

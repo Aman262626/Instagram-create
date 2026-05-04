@@ -9,48 +9,72 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);padding:20px}
-    .card{background:#fff;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.25);width:100%;max-width:440px;overflow:hidden}
-    .card-header{background:linear-gradient(135deg,#405de6,#5851db,#833ab4,#c13584,#e1306c,#fd1d1d);padding:32px 28px 24px;text-align:center;color:#fff}
-    .card-header h1{font-size:24px;font-weight:700;margin-bottom:4px}
-    .card-header p{font-size:13px;opacity:.85}
-    .card-body{padding:28px}
+    body{font-family:'Inter',sans-serif;min-height:100vh;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);padding:20px;display:flex;flex-direction:column;align-items:center}
+    .card{background:#fff;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.25);width:100%;max-width:480px;overflow:hidden;margin-bottom:20px}
+    .card-header{background:linear-gradient(135deg,#405de6,#5851db,#833ab4,#c13584,#e1306c,#fd1d1d);padding:28px 24px 20px;text-align:center;color:#fff}
+    .card-header h1{font-size:22px;font-weight:700;margin-bottom:4px}
+    .card-header p{font-size:12px;opacity:.85}
+    .card-body{padding:24px}
     .step{display:none}
     .step.active{display:block}
-    .step-indicator{display:flex;gap:8px;margin-bottom:24px;justify-content:center}
+    .step-indicator{display:flex;gap:8px;margin-bottom:20px;justify-content:center}
     .step-dot{width:10px;height:10px;border-radius:50%;background:#e0e0e0;transition:background .3s}
     .step-dot.done{background:#833ab4}
     .step-dot.current{background:#e1306c;box-shadow:0 0 0 3px rgba(225,48,108,.3)}
     label{display:block;font-size:13px;font-weight:600;color:#333;margin-bottom:6px}
     input{width:100%;padding:12px 14px;border:2px solid #e0e0e0;border-radius:12px;font-size:15px;font-family:inherit;transition:border-color .2s;outline:none}
     input:focus{border-color:#833ab4}
-    .btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;margin-top:16px;transition:transform .15s,opacity .15s;font-family:inherit}
+    input:read-only{background:#f5f5f5;color:#666}
+    .btn{width:100%;padding:13px;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;margin-top:12px;transition:transform .15s,opacity .15s;font-family:inherit}
     .btn-primary{background:linear-gradient(135deg,#833ab4,#e1306c);color:#fff}
     .btn-primary:hover{transform:translateY(-1px)}
     .btn-primary:active{transform:translateY(0)}
     .btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none}
     .btn-outline{background:transparent;border:2px solid #e0e0e0;color:#333}
     .btn-outline:hover{border-color:#833ab4;color:#833ab4}
+    .btn-sm{padding:10px;font-size:13px}
+    .btn-green{background:linear-gradient(135deg,#11998e,#38ef7d);color:#fff}
+    .divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:#aaa;font-size:12px}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:#e0e0e0}
     .error-msg{color:#e1306c;font-size:13px;margin-top:8px;display:none}
     .error-msg.visible{display:block}
-    .loader{display:inline-block;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:8px}
+    .loader{display:inline-block;width:16px;height:16px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
     @keyframes spin{to{transform:rotate(360deg)}}
-    .result-box{background:#f8f9fa;border-radius:12px;padding:16px;margin-top:12px;word-break:break-all}
+    .result-box{background:#f8f9fa;border-radius:12px;padding:14px;margin-top:12px;word-break:break-all}
     .result-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px}
     .result-row:last-child{margin-bottom:0}
-    .result-label{font-size:12px;font-weight:600;color:#833ab4;min-width:70px;flex-shrink:0}
-    .result-value{font-size:14px;color:#333;font-family:'Courier New',monospace}
+    .result-label{font-size:11px;font-weight:600;color:#833ab4;min-width:68px;flex-shrink:0}
+    .result-value{font-size:13px;color:#333;font-family:'Courier New',monospace;flex:1;min-width:0;overflow-wrap:break-word}
     .copy-btn{background:none;border:1px solid #ddd;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;color:#666;flex-shrink:0;margin-left:auto}
     .copy-btn:hover{border-color:#833ab4;color:#833ab4}
-    .success-icon{font-size:48px;text-align:center;margin-bottom:12px}
-    .step-title{font-size:17px;font-weight:600;color:#333;margin-bottom:16px;text-align:center}
+    .success-icon{font-size:44px;text-align:center;margin-bottom:10px}
+    .step-title{font-size:16px;font-weight:600;color:#333;margin-bottom:14px;text-align:center}
+    .auto-otp-bar{background:#f0f7ff;border:1px solid #c5ddf7;border-radius:10px;padding:10px 14px;margin-top:12px;font-size:12px;color:#1a73e8;display:none;align-items:center;gap:8px}
+    .auto-otp-bar.visible{display:flex}
+    .pulse{width:8px;height:8px;border-radius:50%;background:#1a73e8;animation:pulse 1.2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+    .email-badge{background:#f0f7ff;border:1px solid #c5ddf7;border-radius:8px;padding:8px 12px;font-size:13px;font-family:'Courier New',monospace;color:#1a73e8;text-align:center;margin-bottom:12px;word-break:break-all}
+    /* History table */
+    .history-card{background:#fff;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.25);width:100%;max-width:480px;overflow:hidden}
+    .history-header{padding:18px 24px 14px;display:flex;align-items:center;justify-content:space-between}
+    .history-header h2{font-size:16px;font-weight:700;color:#333}
+    .history-count{background:#833ab4;color:#fff;font-size:11px;padding:2px 8px;border-radius:10px}
+    .history-body{padding:0 24px 20px;max-height:400px;overflow-y:auto}
+    .history-item{background:#f8f9fa;border-radius:10px;padding:12px;margin-bottom:10px;font-size:12px}
+    .history-item:last-child{margin-bottom:0}
+    .hi-row{display:flex;justify-content:space-between;margin-bottom:4px}
+    .hi-label{color:#888;font-weight:500}
+    .hi-value{color:#333;font-family:'Courier New',monospace;font-weight:600}
+    .hi-date{color:#aaa;font-size:11px;margin-top:4px}
+    .history-empty{text-align:center;color:#aaa;font-size:13px;padding:20px 0}
+    .clear-btn{background:none;border:none;color:#e1306c;font-size:12px;cursor:pointer;font-weight:600}
   </style>
 </head>
 <body>
   <div class="card">
     <div class="card-header">
       <h1>IG Account Creator</h1>
-      <p>Create Instagram accounts in 3 simple steps</p>
+      <p>Temp Email + Auto OTP + Account History</p>
     </div>
     <div class="card-body">
       <div class="step-indicator">
@@ -61,8 +85,10 @@
 
       <!-- Step 1: Email -->
       <div class="step active" id="step-1">
-        <div class="step-title">Enter Email Address</div>
-        <label for="email">Email</label>
+        <div class="step-title">Step 1: Get Email</div>
+        <button class="btn btn-green btn-sm" id="btn-gen-email" onclick="generateTempEmail()">Generate Temp Email</button>
+        <div class="divider">or enter your own</div>
+        <label for="email">Email Address</label>
         <input type="email" id="email" placeholder="your@email.com" autocomplete="email" />
         <div class="error-msg" id="err-1"></div>
         <button class="btn btn-primary" id="btn-send" onclick="sendCode()">Send Verification Code</button>
@@ -70,13 +96,17 @@
 
       <!-- Step 2: OTP -->
       <div class="step" id="step-2">
-        <div class="step-title">Enter OTP Code</div>
-        <p style="font-size:13px;color:#666;margin-bottom:14px;text-align:center" id="otp-hint"></p>
+        <div class="step-title">Step 2: Verify OTP</div>
+        <div class="email-badge" id="otp-email-badge"></div>
         <label for="otp">6-digit Code</label>
         <input type="text" id="otp" placeholder="123456" maxlength="6" inputmode="numeric" autocomplete="one-time-code" />
+        <div class="auto-otp-bar" id="auto-otp-bar">
+          <span class="pulse"></span>
+          <span>Auto-checking inbox for OTP... <b id="auto-otp-count">0</b> checks</span>
+        </div>
         <div class="error-msg" id="err-2"></div>
         <button class="btn btn-primary" id="btn-verify" onclick="verifyOtp()">Verify &amp; Create Account</button>
-        <button class="btn btn-outline" onclick="restart()">Start Over</button>
+        <button class="btn btn-outline btn-sm" onclick="restart()">Start Over</button>
       </div>
 
       <!-- Step 3: Result -->
@@ -84,22 +114,39 @@
         <div class="success-icon">&#127881;</div>
         <div class="step-title">Account Created!</div>
         <div class="result-box" id="result-box"></div>
-        <button class="btn btn-primary" style="margin-top:20px" onclick="restart()">Create Another</button>
+        <button class="btn btn-primary" style="margin-top:16px" onclick="restart()">Create Another</button>
       </div>
 
       <!-- Error state -->
       <div class="step" id="step-error">
         <div class="success-icon">&#9888;&#65039;</div>
         <div class="step-title" id="err-title">Something Went Wrong</div>
-        <p style="font-size:14px;color:#666;text-align:center" id="err-detail"></p>
-        <button class="btn btn-primary" style="margin-top:20px" onclick="restart()">Try Again</button>
+        <p style="font-size:13px;color:#666;text-align:center" id="err-detail"></p>
+        <button class="btn btn-primary" style="margin-top:16px" onclick="restart()">Try Again</button>
       </div>
+    </div>
+  </div>
+
+  <!-- History Section -->
+  <div class="history-card" id="history-card" style="display:none">
+    <div class="history-header">
+      <h2>Account History</h2>
+      <span class="history-count" id="history-count">0</span>
+      <button class="clear-btn" onclick="clearHistory()">Clear All</button>
+    </div>
+    <div class="history-body" id="history-body">
+      <div class="history-empty">No accounts created yet.</div>
     </div>
   </div>
 
   <script>
     let sessionToken = "";
+    let mailToken = "";
+    let usingTempMail = false;
+    let autoOtpInterval = null;
+    let autoOtpChecks = 0;
 
+    // ─── Step navigation ───
     function showStep(n) {
       document.querySelectorAll(".step").forEach(s => s.classList.remove("active"));
       document.getElementById("step-" + n).classList.add("active");
@@ -111,8 +158,8 @@
       }
     }
 
-    function showError(stepId, msg) {
-      const el = document.getElementById(stepId);
+    function showError(id, msg) {
+      const el = document.getElementById(id);
       el.textContent = msg;
       el.classList.add("visible");
     }
@@ -137,17 +184,43 @@
     }
 
     function restart() {
+      stopAutoOtp();
       sessionToken = "";
+      mailToken = "";
+      usingTempMail = false;
       document.getElementById("email").value = "";
+      document.getElementById("email").readOnly = false;
       document.getElementById("otp").value = "";
       clearErrors();
       showStep(1);
     }
 
+    // ─── Temp email generation ───
+    async function generateTempEmail() {
+      clearErrors();
+      setLoading("btn-gen-email", true);
+      try {
+        const res = await fetch("/api/create-email", { method: "POST" });
+        const data = await res.json();
+        if (data.ok) {
+          document.getElementById("email").value = data.email;
+          document.getElementById("email").readOnly = true;
+          mailToken = data.mail_token;
+          usingTempMail = true;
+        } else {
+          showError("err-1", data.error || "Failed to generate email.");
+        }
+      } catch (e) {
+        showError("err-1", "Network error generating email.");
+      }
+      setLoading("btn-gen-email", false);
+    }
+
+    // ─── Send verification code ───
     async function sendCode() {
       clearErrors();
       const email = document.getElementById("email").value.trim();
-      if (!email) { showError("err-1", "Please enter an email."); return; }
+      if (!email) { showError("err-1", "Please enter or generate an email."); return; }
 
       setLoading("btn-send", true);
       try {
@@ -159,9 +232,9 @@
         const data = await res.json();
         if (data.ok) {
           sessionToken = data.session_token;
-          document.getElementById("otp-hint").textContent =
-            "A code was sent to " + email;
+          document.getElementById("otp-email-badge").textContent = email;
           showStep(2);
+          if (usingTempMail && mailToken) startAutoOtp();
         } else {
           showError("err-1", data.error || "Failed to send code.");
         }
@@ -171,14 +244,47 @@
       setLoading("btn-send", false);
     }
 
+    // ─── Auto OTP polling ───
+    function startAutoOtp() {
+      autoOtpChecks = 0;
+      const bar = document.getElementById("auto-otp-bar");
+      bar.classList.add("visible");
+      document.getElementById("auto-otp-count").textContent = "0";
+
+      autoOtpInterval = setInterval(async () => {
+        autoOtpChecks++;
+        document.getElementById("auto-otp-count").textContent = autoOtpChecks;
+        try {
+          const res = await fetch("/api/check-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mail_token: mailToken }),
+          });
+          const data = await res.json();
+          if (data.ok && data.codes && data.codes.length > 0) {
+            const code = data.codes.find(c => c.length === 6) || data.codes[0];
+            document.getElementById("otp").value = code;
+            stopAutoOtp();
+          }
+        } catch (e) { /* ignore polling errors */ }
+        if (autoOtpChecks >= 30) stopAutoOtp();
+      }, 8000);
+    }
+
+    function stopAutoOtp() {
+      if (autoOtpInterval) { clearInterval(autoOtpInterval); autoOtpInterval = null; }
+      document.getElementById("auto-otp-bar").classList.remove("visible");
+    }
+
+    // ─── Verify OTP & create account ───
     async function verifyOtp() {
       clearErrors();
       const otp = document.getElementById("otp").value.trim();
       if (!otp || otp.length < 6) { showError("err-2", "Enter the 6-digit code."); return; }
 
+      stopAutoOtp();
       setLoading("btn-verify", true);
       try {
-        // Step A: verify OTP
         let res = await fetch("/api/verify-otp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -192,7 +298,6 @@
         }
         sessionToken = data.session_token;
 
-        // Step B: create account
         res = await fetch("/api/create-account", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -201,29 +306,31 @@
         data = await res.json();
         if (data.ok) {
           renderResult(data);
+          saveToHistory(data);
           showStep(3);
         } else {
-          document.getElementById("err-detail").textContent =
-            data.error || "Account creation failed.";
+          document.getElementById("err-detail").textContent = data.error || "Account creation failed.";
           showStep("error");
         }
       } catch (e) {
-        document.getElementById("err-detail").textContent =
-          "Network error. Please try again.";
+        document.getElementById("err-detail").textContent = "Network error. Please try again.";
         showStep("error");
       }
       setLoading("btn-verify", false);
     }
 
+    // ─── Result rendering ───
     function renderResult(data) {
       const box = document.getElementById("result-box");
-      box.innerHTML = row("Username", data.username) +
+      const email = document.getElementById("otp-email-badge").textContent;
+      box.innerHTML = row("Email", email) +
+                      row("Username", data.username) +
                       row("Password", data.password) +
                       row("Cookies", data.cookies);
     }
 
     function row(label, value) {
-      const id = "val-" + label.toLowerCase();
+      const id = "val-" + label.toLowerCase().replace(/\s/g, "");
       return '<div class="result-row">' +
         '<span class="result-label">' + label + '</span>' +
         '<span class="result-value" id="' + id + '">' + esc(value) + '</span>' +
@@ -233,19 +340,72 @@
 
     function esc(s) {
       const d = document.createElement("div");
-      d.textContent = s;
+      d.textContent = s || "";
       return d.innerHTML;
     }
 
     function copyText(id) {
       const text = document.getElementById(id).textContent;
       navigator.clipboard.writeText(text).then(() => {
-        const btn = document.getElementById(id)
-          .closest(".result-row").querySelector(".copy-btn");
+        const btn = document.getElementById(id).closest(".result-row").querySelector(".copy-btn");
         btn.textContent = "Copied!";
         setTimeout(() => btn.textContent = "Copy", 1500);
       });
     }
+
+    // ─── History (localStorage) ───
+    function getHistory() {
+      try { return JSON.parse(localStorage.getItem("ig_history") || "[]"); }
+      catch { return []; }
+    }
+
+    function saveToHistory(data) {
+      const email = document.getElementById("otp-email-badge").textContent;
+      const history = getHistory();
+      history.unshift({
+        email: email,
+        username: data.username,
+        password: data.password,
+        cookies: data.cookies,
+        date: new Date().toLocaleString(),
+      });
+      localStorage.setItem("ig_history", JSON.stringify(history));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const history = getHistory();
+      const card = document.getElementById("history-card");
+      const body = document.getElementById("history-body");
+      const count = document.getElementById("history-count");
+
+      if (history.length === 0) {
+        card.style.display = "none";
+        return;
+      }
+
+      card.style.display = "block";
+      count.textContent = history.length;
+
+      body.innerHTML = history.map(h =>
+        '<div class="history-item">' +
+          '<div class="hi-row"><span class="hi-label">Email</span><span class="hi-value">' + esc(h.email) + '</span></div>' +
+          '<div class="hi-row"><span class="hi-label">Username</span><span class="hi-value">' + esc(h.username) + '</span></div>' +
+          '<div class="hi-row"><span class="hi-label">Password</span><span class="hi-value">' + esc(h.password) + '</span></div>' +
+          '<div class="hi-date">' + esc(h.date) + '</div>' +
+        '</div>'
+      ).join("");
+    }
+
+    function clearHistory() {
+      if (confirm("Clear all account history?")) {
+        localStorage.removeItem("ig_history");
+        renderHistory();
+      }
+    }
+
+    // Init
+    renderHistory();
   </script>
 </body>
 </html>
