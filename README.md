@@ -23,12 +23,15 @@ Designed to be deployed on **Vercel** using Python serverless functions.
 1. Push this repo to GitHub.
 2. Import the repository in [Vercel](https://vercel.com/new).
 3. Vercel will auto-detect the `vercel.json` configuration.
-4. Click **Deploy** – no extra settings needed.
+4. Add a `SECRET_KEY` environment variable in Vercel → Settings → Environment Variables.  
+   Generate one with: `python -c "import secrets; print(secrets.token_hex(32))"`
+5. Click **Deploy**.
 
 ## Local Development
 
 ```bash
 pip install -r requirements.txt
+export SECRET_KEY=$(python -c "import secrets; print(secrets.token_hex(32))")
 cd api && flask --app index run --debug
 ```
 
@@ -52,4 +55,4 @@ Then open `http://localhost:5000`.
 2. **Verify OTP** – Confirms the email code via Instagram's API.  
 3. **Create Account** – Generates a random username/password and registers the account.
 
-Session state is passed between steps as a base64-encoded token so the serverless functions remain stateless.
+Session state is passed between steps as a signed token (via `itsdangerous`) so the serverless functions remain stateless and tamper-proof.

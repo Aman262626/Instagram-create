@@ -9,7 +9,14 @@ import requests as http_requests
 import names
 
 app = Flask(__name__, static_folder="../public", static_url_path="")
-app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", os.urandom(32).hex())
+
+_secret = os.environ.get("SECRET_KEY")
+if not _secret:
+    raise RuntimeError(
+        "SECRET_KEY environment variable must be set. "
+        "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\""
+    )
+app.config["SECRET_KEY"] = _secret
 
 _serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
 
