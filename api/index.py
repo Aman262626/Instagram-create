@@ -1,5 +1,6 @@
 import os
 import random
+import secrets
 import string
 import time
 
@@ -188,7 +189,7 @@ def create_account():
     try:
         fname = names.get_first_name()
         uname = _generate_username()
-        pwd = f"{fname}@{random.randint(111, 999)}"
+        pwd = f"{fname}@{secrets.randbelow(889) + 111}"
 
         mid = headers["cookie"].split("mid=")[1].split(";")[0]
         ig_did = headers["cookie"].split("ig_did=")[1].split(";")[0]
